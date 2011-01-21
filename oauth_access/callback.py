@@ -8,9 +8,9 @@ from django.contrib.auth.models import User
 class Callback(object):
     
     def __call__(self, request, access, token):
+        user_data = self.fetch_user_data(request, access, token)
         if not request.user.is_authenticated():
             authenticated = False
-            user_data = self.fetch_user_data(request, access, token)
             user = self.lookup_user(request, access, user_data)
             if user is None:
                 ret = self.handle_no_user(request, access, token, user_data)
@@ -27,8 +27,7 @@ class Callback(object):
         redirect_to = self.redirect_url(request)
         if user:
             kwargs = {}
-            if not authenticated:
-                kwargs["identifier"] = self.identifier_from_data(user_data)
+            kwargs["identifier"] = self.identifier_from_data(user_data)
             access.persist(user, token, **kwargs)
         return redirect(redirect_to)
     
